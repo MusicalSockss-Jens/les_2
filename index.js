@@ -23,6 +23,25 @@ app.get('/api/v1/messages', (req, res) => {
     });
 });
 
+app.get('/api/v1/messages/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    const message = messages.find(m => m.id === id);
+
+    if (!message) {
+        return res.status(404).json({
+            status: "fail",
+            message: "Bericht niet gevonden"
+        });
+    }
+
+    res.status(200).json({
+        status: "success",
+        data: {
+            message: message
+        }
+    });
+});
+
 app.listen(PORT, () => {
     console.log(`Server draait op poort ${PORT}`);
 });

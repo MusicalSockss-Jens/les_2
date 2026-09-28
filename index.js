@@ -88,6 +88,25 @@ app.put('/api/v1/messages/:id', (req, res) => {
     });
 });
 
+app.delete('/api/v1/messages/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    const index = messages.findIndex(m => m.id === id);
+
+    if (index === -1) {
+        return res.status(404).json({
+            status: "fail",
+            message: "Bericht niet gevonden om te verwijderen"
+        });
+    }
+
+    messages.splice(index, 1);
+
+    res.status(200).json({
+        status: "success",
+        message: "Bericht succesvol verwijderd"
+    });
+});
+
 app.listen(PORT, () => {
     console.log(`Server draait op poort ${PORT}`);
 });

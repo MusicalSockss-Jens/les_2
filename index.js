@@ -42,6 +42,27 @@ app.get('/api/v1/messages/:id', (req, res) => {
     });
 });
 
+app.post('/api/v1/messages', (req, res) => {
+
+    console.log("Wat zit er in req.body?:", req.body);
+    
+    const newMessage = {
+        id: messages.length,
+        user: req.body.message.user,
+        text: req.body.message.text
+    };
+
+    messages.push(newMessage);
+
+    res.status(201).json({
+        status: "success",
+        message: "Bericht succesvol toegevoegd",
+        data: {
+            message: newMessage
+        }
+    });
+});
+
 app.listen(PORT, () => {
     console.log(`Server draait op poort ${PORT}`);
 });

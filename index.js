@@ -45,7 +45,7 @@ app.get('/api/v1/messages/:id', (req, res) => {
 app.post('/api/v1/messages', (req, res) => {
 
     console.log("Wat zit er in req.body?:", req.body);
-    
+
     const newMessage = {
         id: messages.length,
         user: req.body.message.user,
@@ -59,6 +59,31 @@ app.post('/api/v1/messages', (req, res) => {
         message: "Bericht succesvol toegevoegd",
         data: {
             message: newMessage
+        }
+    });
+});
+
+app.put('/api/v1/messages/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    const message = messages.find(m => m.id === id);
+
+    if (!message) {
+        return res.status(404).json({
+            status: "fail",
+            message: "Bericht niet gevonden om te updaten"
+        });
+    }
+
+    // Update de tekst (of andere velden indien meegeleverd)
+    if (req.body.message && req.body.message.text) {
+        message.text = req.body.message.text;
+    }
+
+    res.status(200).json({
+        status: "success",
+        message: "Bericht succesvol geüpdatet",
+        data: {
+            message: message
         }
     });
 });

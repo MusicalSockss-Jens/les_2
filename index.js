@@ -23,24 +23,21 @@ app.get('/api/v1/messages', (req, res) => {
     });
 });
 
-app.get('/api/v1/messages/:id', (req, res) => {
-    const id = parseInt(req.params.id);
-    const message = messages.find(m => m.id === id);
+app.get('/api/v1/messages', (req, res) => {
+    let resultMessages = messages;
 
-    if (!message) {
-        return res.status(404).json({
-            status: "fail",
-            message: "Bericht niet gevonden"
-        });
+    if (req.query.user) {
+        resultMessages = messages.filter(m => m.user.toLowerCase() === req.query.user.toLowerCase());
     }
 
     res.status(200).json({
         status: "success",
         data: {
-            message: message
+            messages: resultMessages
         }
     });
 });
+
 
 app.post('/api/v1/messages', (req, res) => {
 
@@ -74,7 +71,7 @@ app.put('/api/v1/messages/:id', (req, res) => {
         });
     }
 
-    // Update de tekst (of andere velden indien meegeleverd)
+    console.log("Wat zit er in req.body?:", req.body);
     if (req.body.message && req.body.message.text) {
         message.text = req.body.message.text;
     }
@@ -106,6 +103,8 @@ app.delete('/api/v1/messages/:id', (req, res) => {
         message: "Bericht succesvol verwijderd"
     });
 });
+
+
 
 app.listen(PORT, () => {
     console.log(`Server draait op poort ${PORT}`);

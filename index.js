@@ -15,19 +15,14 @@ app.get('/', (req, res) => {
 });
 
 app.get('/api/v1/messages', (req, res) => {
-    res.status(200).json({
-        status: "success",
-        data: {
-            messages: messages
-        }
-    });
-});
+    const user = req.query.user;
 
-app.get('/api/v1/messages', (req, res) => {
     let resultMessages = messages;
 
-    if (req.query.user) {
-        resultMessages = messages.filter(m => m.user.toLowerCase() === req.query.user.toLowerCase());
+    if (user) {
+        resultMessages = messages.filter(
+            msg => msg.user.toLowerCase() === String(user).toLowerCase()
+        );
     }
 
     res.status(200).json({
@@ -38,15 +33,47 @@ app.get('/api/v1/messages', (req, res) => {
     });
 });
 
+app.get('/api/v1/messages/:id', (req, res) => {
+    const id = Number(req.params.id);
+    const message = messages.find(msg => msg.id === id);
+
+    if (!message) {
+        return res.status(404).json({
+            status: "fail",
+            message: "Bericht niet gevonden"
+        });
+    }
+
+    res.status(200).json({
+        status: "success",
+        data: {
+            message
+        }
+    });
+});
 
 app.post('/api/v1/messages', (req, res) => {
+    const payload = req.body?.message;
 
-    console.log("Wat zit er in req.body?:", req.body);
+    if (
+        !payload ||
+        typeof payload.user !== 'string' ||
+        typeof payload.text !== 'string'
+    ) {
+        return res.status(400).json({
+            status: "fail",
+            message: "Ongeldige body. Gebruik { message: { user, text } }"
+        });
+    }
+
+    const nextId = messages.length > 0
+        ? Math.max(...messages.map(msg => msg.id)) + 1
+        : 0;
 
     const newMessage = {
-        id: messages.length,
-        user: req.body.message.user,
-        text: req.body.message.text
+        id: nextId,
+        user: payload.user,
+        text: payload.text
     };
 
     messages.push(newMessage);
@@ -61,8 +88,8 @@ app.post('/api/v1/messages', (req, res) => {
 });
 
 app.put('/api/v1/messages/:id', (req, res) => {
-    const id = parseInt(req.params.id);
-    const message = messages.find(m => m.id === id);
+    const id = Number(req.params.id);
+    const message = messages.find(msg => msg.id === id);
 
     if (!message) {
         return res.status(404).json({
@@ -71,23 +98,30 @@ app.put('/api/v1/messages/:id', (req, res) => {
         });
     }
 
-    console.log("Wat zit er in req.body?:", req.body);
-    if (req.body.message && req.body.message.text) {
-        message.text = req.body.message.text;
+    const payload = req.body?.message;
+
+    if (!payload) {
+        return res.status(400).json({
+            status: "fail",
+            message: "Geen geldig bericht gegeven"
+        });
     }
+
+    if (payload.user !== undefined) message.user = payload.user;
+    if (payload.text !== undefined) message.text = payload.text;
 
     res.status(200).json({
         status: "success",
         message: "Bericht succesvol geüpdatet",
         data: {
-            message: message
+            message
         }
     });
 });
 
 app.delete('/api/v1/messages/:id', (req, res) => {
-    const id = parseInt(req.params.id);
-    const index = messages.findIndex(m => m.id === id);
+    const id = Number(req.params.id);
+    const index = messages.findIndex(msg => msg.id === id);
 
     if (index === -1) {
         return res.status(404).json({
@@ -103,8 +137,6 @@ app.delete('/api/v1/messages/:id', (req, res) => {
         message: "Bericht succesvol verwijderd"
     });
 });
-
-
 
 app.listen(PORT, () => {
     console.log(`Server draait op poort ${PORT}`);
